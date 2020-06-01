@@ -36,38 +36,46 @@ public class USSDHandlerController {
         } else if (text.equals("2")) {
             response = getCropMenu();
         } else if (text.startsWith("1*") && text.length() == 3) {
-            //PROVINCE MENU
-            response = getThanksMsg();
-            if(text.endsWith("1")) {
-                province = PROVINCES.get(0);
-            } else if(text.endsWith("2")) {
-                province = PROVINCES.get(1);
-            } else if(text.endsWith("3")) {
-                province = PROVINCES.get(2);
-            } else if(text.endsWith("4")) {
-                province = PROVINCES.get(3);
-            } else {
-                response = "END Invalid input\n";
-            }
-            response = response.concat("\nselected province: " + province);
+            response = processProvinceSelection(text);
         } else if (text.startsWith("2*") && text.length() == 3) {
-            //CROP MENU
-            response = getThanksMsg();
-            if(text.endsWith("1")) {
-                crop = CROPS.get(0);
-            } else if(text.endsWith("2")) {
-                crop = CROPS.get(1);
-            } else if(text.endsWith("3")) {
-                crop = CROPS.get(2);
-            } else if(text.endsWith("4")) {
-                crop = CROPS.get(3);
-            } else {
-                response = "END Invalid input\n";
-            }
-            response = response.concat("\n selected crop: " + crop);
+            response = processCropSelection(text);
         } else {
             response = "END Invalid input. Please try again.";
         }
+        return response;
+    }
+
+    private String processCropSelection(@RequestParam String text) {
+        String response = getThanksMsg();
+        if(text.endsWith("1")) {
+            crop = CROPS.get(0);
+        } else if(text.endsWith("2")) {
+            crop = CROPS.get(1);
+        } else if(text.endsWith("3")) {
+            crop = CROPS.get(2);
+        } else if(text.endsWith("4")) {
+            crop = CROPS.get(3);
+        } else {
+            response = "END Invalid input\n";
+        }
+        response = response.concat("\n selected crop: " + crop);
+        return response;
+    }
+
+    private String processProvinceSelection(@RequestParam String text) {
+        String response = getThanksMsg();
+        if(text.endsWith("1")) {
+            province = PROVINCES.get(0);
+        } else if(text.endsWith("2")) {
+            province = PROVINCES.get(1);
+        } else if(text.endsWith("3")) {
+            province = PROVINCES.get(2);
+        } else if(text.endsWith("4")) {
+            province = PROVINCES.get(3);
+        } else {
+            response = "END Invalid input\n";
+        }
+        response = response.concat("\nselected province: " + province);
         return response;
     }
 

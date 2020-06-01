@@ -36,7 +36,7 @@ public class SendMessageController {
         return "SUCCESS";
     }
 
-    @GetMapping("sms/send")
+    @GetMapping("sms/fetch")
     public String handleFetchMessage() throws IOException {
         AfricasTalking.initialize(API_KEY, USERNAME);
         List<Message> responses = getSMS();
@@ -57,7 +57,7 @@ public class SendMessageController {
 
 
     private String[] getRecipients() {
-        return new String[] {"+254739496441", "+254739495441"};
+        return new String[] {"+254739496441", "+254739496030"};
     }
 
     private void generateMessage() {
