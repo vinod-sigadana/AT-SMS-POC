@@ -1,23 +1,17 @@
 package com.yara.sms.controller;
 
-import com.africastalking.AfricasTalking;
-import com.africastalking.sms.FetchMessageResponse;
-import com.africastalking.sms.SendMessageResponse;
-import com.yara.sms.model.AfricasTalkingResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 
 @RestController
 @Slf4j
@@ -43,19 +37,20 @@ public class SendMessageController {
     private RestTemplate restTemplate;
 
     @PostMapping("sms/send")
-    public AfricasTalkingResponse handleSendMessage() {
+    public Map handleSendMessage() {
         generateMessage();
-        ResponseEntity<AfricasTalkingResponse> response = sendSMS(getRecipients());
+        ResponseEntity<Map> response = sendSMS(getRecipients());
         if(response.hasBody()) {
             return response.getBody();
         }
         return null;
     }
 
-    private ResponseEntity<AfricasTalkingResponse> sendSMS(String[] recipients) {
+    private ResponseEntity<Map> sendSMS(String[] recipients) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.add("apiKey", API_KEY);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         MultiValueMap<String, String> requestParams= new LinkedMultiValueMap<>();
         requestParams.add("username", USERNAME);
@@ -65,7 +60,7 @@ public class SendMessageController {
 
         HttpEntity request = new HttpEntity(requestParams, headers);
 
-        ResponseEntity<AfricasTalkingResponse> response = restTemplate.exchange(AT_ENDPOINT, HttpMethod.POST, request, AfricasTalkingResponse.class);
+        ResponseEntity<Map> response = restTemplate.exchange(AT_ENDPOINT, HttpMethod.POST, request, Map.class);
         return response;
     }
 
