@@ -1,60 +1,73 @@
 package com.yara.sms.controller;
 
 import com.africastalking.AfricasTalking;
-import com.africastalking.SmsService;
-import com.africastalking.sms.Message;
-import com.africastalking.sms.Recipient;
+import com.africastalking.sms.FetchMessageResponse;
+import com.africastalking.sms.SendMessageResponse;
+import com.yara.sms.model.AfricasTalkingResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collections;
 
 @RestController
+@Slf4j
 public class SendMessageController {
+
     @Value("${application.key}")
     private String API_KEY;
+
     @Value("${application.username}")
     private String USERNAME;
+
     private String MESSAGE;
+
     @Value("${application.serviceCode}")
     private String SERVICE_CODE;
+
+    @Value("${application.sms.endpoint}")
+    private String AT_ENDPOINT;
+
     private Boolean ENQUEUE=false;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     @PostMapping("sms/send")
-    public String handleSendMessage() throws IOException {
+    public AfricasTalkingResponse handleSendMessage() {
         generateMessage();
-        AfricasTalking.initialize(API_KEY, USERNAME);
-        List<Recipient> responses = sendSMS(getRecipients());
-        System.out.println(responses.size());
-        for (Recipient response : responses) {
-            System.out.println(String.format("{ Number : %1$s\n" +"  Cost : %2$s \n" + "  Status : %3$s \n"+"  MessageId : %4$s \n}",
-                    response.number, response.cost,response.status,response.messageId));
+        ResponseEntity<AfricasTalkingResponse> response = sendSMS(getRecipients());
+        if(response.hasBody()) {
+            return response.getBody();
         }
-        return "SUCCESS";
+        return null;
     }
 
-    @GetMapping("sms/fetch")
-    public String handleFetchMessage() throws IOException {
-        AfricasTalking.initialize(API_KEY, USERNAME);
-        List<Message> responses = getSMS();
-        System.out.println(responses.size());
-        return "SUCCESS";
+    private ResponseEntity<AfricasTalkingResponse> sendSMS(String[] recipients) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.add("apiKey", API_KEY);
+
+        MultiValueMap<String, String> requestParams= new LinkedMultiValueMap<>();
+        requestParams.add("username", USERNAME);
+        requestParams.add("from", SERVICE_CODE);
+        requestParams.add("to", "+254739496030");
+        requestParams.add("message", "Hello");
+
+        HttpEntity request = new HttpEntity(requestParams, headers);
+
+        ResponseEntity<AfricasTalkingResponse> response = restTemplate.exchange(AT_ENDPOINT, HttpMethod.POST, request, AfricasTalkingResponse.class);
+        return response;
     }
-
-    private List<Message> getSMS() throws IOException {
-        SmsService sms = AfricasTalking.getService(AfricasTalking.SERVICE_SMS);
-        return sms.fetchMessages(0);
-    }
-
-    private List<Recipient> sendSMS(String[] recipients) throws IOException {
-        SmsService smsService =AfricasTalking.getService(AfricasTalking.SERVICE_SMS);
-        return smsService.send(MESSAGE, SERVICE_CODE, recipients, ENQUEUE);
-    }
-
-
 
     private String[] getRecipients() {
         return new String[] {"+254739496441", "+254739496030"};
