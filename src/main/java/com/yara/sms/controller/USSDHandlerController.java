@@ -36,44 +36,54 @@ public class USSDHandlerController {
         } else if (text.equals("2")) {
             response = getCropMenu();
         } else if (text.startsWith("1*") && text.length() == 3) {
-            response = processProvinceSelection(text);
+            response = processProvinceSelection(text.substring(text.length() - 1));
         } else if (text.startsWith("2*") && text.length() == 3) {
-            response = processCropSelection(text);
+            response = processCropSelection(text.substring(text.length() - 1));
         } else {
             response = "END Invalid input. Please try again.";
         }
         return response;
     }
 
-    private String processCropSelection(@RequestParam String text) {
+    private String processCropSelection(String input) {
         String response = getThanksMsg();
-        if(text.endsWith("1")) {
-            crop = CROPS.get(0);
-        } else if(text.endsWith("2")) {
-            crop = CROPS.get(1);
-        } else if(text.endsWith("3")) {
-            crop = CROPS.get(2);
-        } else if(text.endsWith("4")) {
-            crop = CROPS.get(3);
-        } else {
-            response = "END Invalid input\n";
+        switch (input) {
+            case "1":
+                crop = CROPS.get(0);
+                break;
+            case "2":
+                crop = CROPS.get(1);
+                break;
+            case "3":
+                crop = CROPS.get(2);
+                break;
+            case "4":
+                crop = CROPS.get(3);
+                break;
+            default:
+                response = "END Invalid input\n";
         }
         response = response.concat("\n selected crop: " + crop);
         return response;
     }
 
-    private String processProvinceSelection(@RequestParam String text) {
+    private String processProvinceSelection(String input) {
         String response = getThanksMsg();
-        if(text.endsWith("1")) {
-            province = PROVINCES.get(0);
-        } else if(text.endsWith("2")) {
-            province = PROVINCES.get(1);
-        } else if(text.endsWith("3")) {
-            province = PROVINCES.get(2);
-        } else if(text.endsWith("4")) {
-            province = PROVINCES.get(3);
-        } else {
-            response = "END Invalid input\n";
+        switch (input) {
+            case "1":
+                province = PROVINCES.get(0);
+                break;
+            case "2":
+                province = PROVINCES.get(1);
+                break;
+            case "3":
+                province = PROVINCES.get(2);
+                break;
+            case "4":
+                province = PROVINCES.get(3);
+                break;
+            default:
+                response = "END Invalid input\n";
         }
         response = response.concat("\nselected province: " + province);
         return response;
