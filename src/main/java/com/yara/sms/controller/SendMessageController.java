@@ -1,6 +1,17 @@
 package com.yara.sms.controller;
 
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.ObjectMapper;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.http.utils.ClientFactory;
+import com.mashape.unirest.request.body.MultipartBody;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -10,7 +21,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -37,31 +50,45 @@ public class SendMessageController {
     private RestTemplate restTemplate;
 
     @PostMapping("sms/send")
-    public Map handleSendMessage() {
+    public Map handleSendMessage() throws UnirestException {
         generateMessage();
-        ResponseEntity<Map> response = sendSMS(getRecipients());
-        if(response.hasBody()) {
-            return response.getBody();
-        }
-        return null;
+        setObjectMapper();
+        Map response = sendSMSWithUnirest(getRecipients());
+        //Map response1 = sendSMSWithRestTemplate(getRecipients());
+        return response;
     }
 
-    private ResponseEntity<Map> sendSMS(String[] recipients) {
+    private Map sendSMSWithUnirest(String[] recipients) throws UnirestException {
+        Map<String, Object> requestParams= new HashMap<>();
+        requestParams.put("username", USERNAME);
+        requestParams.put("from", SERVICE_CODE);
+        requestParams.put("to", String.join(",", recipients));
+        requestParams.put("message", "Hello");
+
+        HttpResponse<Map> response0 = Unirest.post(AT_ENDPOINT)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("Accept", "application/json")
+                .header("apiKey", API_KEY)
+                .fields(requestParams).asObject(Map.class);
+
+        return response0.getBody();
+    }
+
+    private Map sendSMSWithRestTemplate(String[] recipients) throws UnirestException {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.add("Content-Type", "application/x-www-form-urlencoded");
         headers.add("apiKey", API_KEY);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         MultiValueMap<String, String> requestParams= new LinkedMultiValueMap<>();
         requestParams.add("username", USERNAME);
         requestParams.add("from", SERVICE_CODE);
-        requestParams.add("to", "+254739496030");
+        requestParams.add("to", String.join(",", recipients));
         requestParams.add("message", "Hello");
 
-        HttpEntity request = new HttpEntity(requestParams, headers);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(requestParams, headers);
 
         ResponseEntity<Map> response = restTemplate.exchange(AT_ENDPOINT, HttpMethod.POST, request, Map.class);
-        return response;
+        return response.getBody();
     }
 
     private String[] getRecipients() {
@@ -70,6 +97,22 @@ public class SendMessageController {
 
     private void generateMessage() {
         MESSAGE="Dear Mauriz , XXXX is helping you to improve your yield with free XXXXXX supply. kindly dial *384*44135# more details";
+    }
+
+    private void setObjectMapper() {
+        Unirest.setObjectMapper(new ObjectMapper() {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+            @SneakyThrows
+            public String writeValue(Object value) {
+                return mapper.writeValueAsString(value);
+            }
+
+            @SneakyThrows
+            public <T> T readValue(String value, Class<T> valueType) {
+                return mapper.readValue(value, valueType);
+            }
+        });
     }
 
 }
