@@ -1,15 +1,15 @@
 package com.yara.sms.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.africastalking.AfricasTalking;
+import com.africastalking.SmsService;
+import com.africastalking.sms.Message;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.Map;
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 public class FetchMessageController {
@@ -20,31 +20,22 @@ public class FetchMessageController {
     @Value("${application.username}")
     private String USERNAME;
 
-    @Value("${application.sms.endpoint}")
-    private String AT_ENDPOINT;
-
-    @Autowired
-    private RestTemplate restTemplate;
-
-    @GetMapping("sms/fetch")
-    public Map handleFetchMessage() {
-        ResponseEntity<Map> response = getSMS();
-        if(response.hasBody()) {
-            return response.getBody();
-        }
-        return null;
+    @GetMapping("sms/fetch/{lastReceivedId}")
+    public List<Message> handleFetchMessage(@PathVariable Integer lastReceivedId) {
+        List<Message> response = getSMSWithAT(lastReceivedId);
+        return response;
     }
 
-    private ResponseEntity<Map> getSMS() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.add("apiKey", API_KEY);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
-
-        ResponseEntity<Map> response = restTemplate.exchange(AT_ENDPOINT + "?username=" + USERNAME, HttpMethod.GET, request, Map.class);
-        return response;
+    private List<Message> getSMSWithAT(Integer lastReceivedId) {
+        AfricasTalking.initialize(USERNAME, API_KEY);
+        SmsService smsService = AfricasTalking.getService(AfricasTalking.SERVICE_SMS);
+        List<Message> recipientList = null;
+        try {
+            recipientList = smsService.fetchMessages(lastReceivedId);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return recipientList;
     }
 
 }
