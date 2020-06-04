@@ -32,11 +32,11 @@ public class DownloadExcelController {
 
     private List<Farmer> getFarmersList() {
         List<Farmer> farmers = new ArrayList<>();
-        farmers.add(new Farmer("1234567890", "John", "Gelecki", null, null));
-        farmers.add(new Farmer("1234567890", "Jim", "Parrison", null, null));
-        farmers.add(new Farmer("1234567890", "Jack", "Pearson", null, null));
-        farmers.add(new Farmer("1234567890", "Rebecca", "Pearson", null, null));
-        farmers.add(new Farmer("1234567890", "Mandy", "Moore", null, null));
+        farmers.add(new Farmer("1234567890", "John", "Gelecki"));
+        farmers.add(new Farmer("1234567890", "Jim", "Parrison"));
+        farmers.add(new Farmer("1234567890", "Jack", "Pearson"));
+        farmers.add(new Farmer("1234567890", "Rebecca", "Pearson"));
+        farmers.add(new Farmer("1234567890", "Mandy", "Moore"));
         farmers.add(Farmer.builder().mobileNumber("1234667890").build());
         farmers.add(Farmer.builder().mobileNumber("1234767890").build());
         farmers.add(Farmer.builder().mobileNumber("1234867890").build());

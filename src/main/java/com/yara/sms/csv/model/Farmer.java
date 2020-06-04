@@ -15,6 +15,4 @@ public class Farmer {
     private String mobileNumber;
     private String firstName;
     private String lastName;
-    private List<String> crops;
-    private List<String> address;
 }
