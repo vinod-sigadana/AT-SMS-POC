@@ -11,7 +11,7 @@
    
 **Note**: In protection mode, specified cells will be read-only and position cannot be altered.
 
-##Upload
+## Upload
 1. Excel sheet name should match with “Farmers” (sheet name can be changed while download)
 2. Admin can upload the file using interface and can see the farmers details as a response.
 3. All farmers` info will be parsed and displayed it to the admin. 
